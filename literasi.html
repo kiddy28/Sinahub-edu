@@ -287,7 +287,7 @@
   <!-- Script Logika Literasi & Engine Kuis -->
   <script>
     const SUPABASE_URL = 'https://kcskkvvvppccjowroopx.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtjc2trdnZ2cHBjY2pvd3Jvb3B4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYwNjA5NjYsImV4cCI6MjEwMTYzNjk2Nn0.vX6zrEXc6uirLCYlGc8BqTBypDUzpjGyanQSADwhzPs';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtc2xtaG94cHpxZHh1dWN3eHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYzNDkxODUsImV4cCI6MjEwMTkyNTE4NX0.lyF5U_p1pIF8dK_rJ73dKZeZWrJ8fANIjmDultLATqo';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const literacyPackages = [
@@ -423,7 +423,7 @@
 
       try {
         const { data: allQuestions, error } = await supabaseClient
-          .from('questions')
+          .from('questions_literasi')
           .select('*')
           .eq('level', currentPkg.level);
 
