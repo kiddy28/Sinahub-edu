@@ -755,13 +755,13 @@
 
     document.addEventListener('DOMContentLoaded', () => { renderCatalog(); });
 
-    function proceedFinish() {
-    // Masukkan logika atau kode untuk mengirim data/menyelesaikan kuis di sini
-    console.log("Kuis berhasil dikumpulkan!");
-    
-    // Contoh redirect atau menampilkan halaman selesai:
-    // window.location.href = "hasil.html";
-}
+   function proceedFinish() {
+        // 1. Tutup modal konfirmasi
+        document.getElementById('finishModal').classList.remove('open');
+        
+        // 2. Panggil fungsi penyelesaian kuis (menghitung nilai, mengirim ke database, dan pindah ke halaman hasil)
+        finishQuiz();
+    }
   </script>
 </body>
 </html>
