@@ -1,6 +1,6 @@
 /* ===================== KONEKSI SUPABASE ===================== */
-const SUPABASE_URL = 'https://qmslmhoxpzqdxuucwxtu.supabase.co/rest/v1/';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtc2xtaG94cHpxZHh1dWN3eHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYzNDkxODUsImV4cCI6MjEwMTkyNTE4NX0.lyF5U_p1pIF8dK_rJ73dKZeZWrJ8fANIjmDultLATqo';
+const SUPABASE_URL = 'https://kcskkvvvppccjowroopx.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtjc2trdnZ2cHBjY2pvd3Jvb3B4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYwNjA5NjYsImV4cCI6MjEwMTYzNjk2Nn0.vX6zrEXc6uirLCYlGc8BqTBypDUzpjGyanQSADwhzPs';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 /* ===================== DATA PAKET ===================== */
@@ -120,10 +120,7 @@ function startQuiz(pkgId) {
     if (elapsedMinutes < 10) {
       const remainingMinutes = Math.ceil(10 - elapsedMinutes);
       
-      // Ubah teks pesan sesuai sisa waktu
       document.getElementById('cooldownMsg').innerHTML = `⚠️ Harap tunggu sekitar <strong>${remainingMinutes} menit lagi</strong> sebelum mulai kuis atau mengisi identitas kembali (Pencegahan Spam).`;
-      
-      // Tampilkan modal kustom
       document.getElementById('cooldownModal').classList.add('open');
       return;
     }
@@ -138,9 +135,11 @@ function startQuiz(pkgId) {
   if (regModal) regModal.classList.add('open');
   else initQuizEngine();
 }
+
 function closeCooldownModal() {
   document.getElementById('cooldownModal').classList.remove('open');
 }
+
 function closeRegModal() {
   const regModal = document.getElementById('regModal');
   if (regModal) regModal.classList.remove('open');
@@ -148,7 +147,6 @@ function closeRegModal() {
 
 function submitRegistration(event) {
   event.preventDefault();
-  
   localStorage.setItem('sinahub_last_submit', Date.now().toString());
 
   userName = document.getElementById('regName').value;
@@ -159,7 +157,7 @@ function submitRegistration(event) {
   initQuizEngine();
 }
 
-/* ===================== QUIZ ENGINE ===================== */
+/* ===================== QUIZ ENGINE (MENGGUNAKAN questions_inggris) ===================== */
 async function initQuizEngine() {
   currentPkg = packages.find(p => p.id === pendingPkgId);
   if (!currentPkg) return;
@@ -170,8 +168,9 @@ async function initQuizEngine() {
   document.getElementById('optionsWrap').innerHTML = '';
 
   try {
+    // Diambil dari tabel terpisah: questions_inggris
     const { data: allQuestions, error } = await supabaseClient
-      .from('questions')
+      .from('questions_inggris')
       .select('*')
       .eq('level', currentPkg.level);
 
@@ -435,7 +434,7 @@ function jumpToQuestion(i) {
   renderQuestion();
 }
 
-/* ===================== VALIDASI SEMUA SOAL TERJAWAB & MODAL KUSTOM ===================== */
+/* ===================== VALIDASI & FINISH ===================== */
 function checkAndFinishQuiz() {
   unansListGlobal = [];
   currentQuestions.forEach((_, i) => {
@@ -471,7 +470,6 @@ function checkAndFinishQuiz() {
 
 function closeFinishModal() {
   document.getElementById('finishModal').classList.remove('open');
-  
   if (unansListGlobal.length > 0) {
     qIndex = unansListGlobal[0] - 1;
     renderQuestion();
@@ -487,7 +485,6 @@ function forceFinishQuiz() {
   finishQuiz();
 }
 
-/* ===================== FINISH & SAVE TO SUPABASE ===================== */
 async function finishQuiz() {
   stopTimerInterval();
   showView('view-result');
@@ -527,124 +524,7 @@ async function finishQuiz() {
   renderRecapData('all');
 }
 
-/* ===================== LEADERBOARD / HASIL PESERTA DENGAN PAGING ===================== */
-function openLeaderboardView() {
-  showView('view-leaderboard');
-  lbCurrentPage = 1;
-  fetchLeaderboardData('all');
-}
-
-function filterLeaderboard(level, event) {
-  activeLeaderboardFilter = level;
-  lbCurrentPage = 1; 
-  document.querySelectorAll('#view-leaderboard .lb-tab').forEach(b => b.classList.remove('active'));
-  if (event) event.currentTarget.classList.add('active');
-  fetchLeaderboardData(level);
-}
-
-async function fetchLeaderboardData(levelFilter = 'all') {
-  const container = document.getElementById('leaderboardContent');
-  if (!container) return;
-  container.innerHTML = `<p style="text-align:center; color: var(--ink-soft);">Memuat data hasil...</p>`;
-
-  try {
-    let query = supabaseClient.from('quiz_results').select('*').order('created_at', { ascending: false });
-
-    if (levelFilter !== 'all') {
-      if (levelFilter === 'UMUM') {
-        query = query.or('package_level.eq.TOEFL_STRUCTURE,package_level.eq.TOEFL_READING,package_level.eq.UMUM');
-      } else {
-        query = query.eq('package_level', levelFilter);
-      }
-    }
-
-    const { data, error } = await query;
-
-    if (error) {
-      container.innerHTML = `<p style="text-align:center; color: var(--red);">Gagal mengambil data dari server.</p>`;
-      return;
-    }
-
-    if (!data || data.length === 0) {
-      container.innerHTML = `<p style="text-align:center; color: var(--ink-soft); padding: 20px 0;">Belum ada hasil peserta untuk jenjang ini.</p>`;
-      return;
-    }
-
-    lbAllDataCache = data;
-    renderLeaderboardPage();
-
-  } catch (err) {
-    console.error(err);
-    container.innerHTML = `<p style="text-align:center; color: var(--red);">Terjadi kesalahan koneksi.</p>`;
-  }
-}
-
-function renderLeaderboardPage() {
-  const container = document.getElementById('leaderboardContent');
-  if (!container) return;
-
-  const totalData = lbAllDataCache.length;
-  const totalPages = Math.ceil(totalData / lbPerPage) || 1;
-  if (lbCurrentPage > totalPages) lbCurrentPage = totalPages;
-  if (lbCurrentPage < 1) lbCurrentPage = 1;
-
-  const startIdx = (lbCurrentPage - 1) * lbPerPage;
-  const endIdx = startIdx + lbPerPage;
-  const paginatedData = lbAllDataCache.slice(startIdx, endIdx);
-
-  container.innerHTML = `
-    <table style="width:100%; border-collapse:collapse; text-align:left; font-size:14px;">
-      <thead>
-        <tr style="border-bottom:2px solid var(--rule); color:var(--ink-soft);">
-          <th style="padding:10px;">Tanggal</th>
-          <th style="padding:10px;">Nama</th>
-          <th style="padding:10px;">Kelas</th>
-          <th style="padding:10px;">Jenjang</th>
-          <th style="padding:10px;">Mode</th>
-          <th style="padding:10px; text-align:center;">Skor</th>
-          <th style="padding:10px; text-align:center;">Nilai</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${paginatedData.map(item => {
-          const dateStr = new Date(item.created_at).toLocaleDateString('id-ID', {
-            day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
-          });
-          
-          let badgeText = (item.package_level || '').replace('SD13','SD 1-3').replace('SD46','SD 4-6');
-          if ((item.package_level || '').startsWith('TOEFL_') || item.package_level === 'UMUM') badgeText = '🔥 UMUM';
-
-          return `
-            <tr style="border-bottom:1px solid var(--rule);">
-              <td style="padding:12px 10px; font-size:12px; color:var(--ink-soft);">${dateStr}</td>
-              <td style="padding:12px 10px; font-weight:bold;">${item.user_name}</td>
-              <td style="padding:12px 10px;">${item.user_class}</td>
-              <td style="padding:12px 10px;"><span class="badge-level badge-${(item.package_level || '').toLowerCase().replace('_','-')}">${badgeText}</span></td>
-              <td style="padding:12px 10px; text-transform:capitalize;">${item.quiz_mode}</td>
-              <td style="padding:12px 10px; text-align:center;">${item.score}/${item.total_questions}</td>
-              <td style="padding:12px 10px; text-align:center; font-weight:bold; color:${item.accuracy >= 70 ? 'var(--green)' : 'var(--red)'};">${item.accuracy}%</td>
-            </tr>
-          `;
-        }).join('')}
-      </tbody>
-    </table>
-
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--rule); flex-wrap: wrap; gap: 8px;">
-      <span style="font-size: 13px; color: var(--ink-soft);">Menampilkan halaman <strong>${lbCurrentPage}</strong> dari <strong>${totalPages}</strong> (Total ${totalData} data)</span>
-      <div style="display: flex; gap: 6px;">
-        <button class="btn btn-sm btn-ghost" ${lbCurrentPage === 1 ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''} onclick="changeLeaderboardPage(lbCurrentPage - 1)">← Prev</button>
-        <button class="btn btn-sm btn-ghost" ${lbCurrentPage === totalPages ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''} onclick="changeLeaderboardPage(lbCurrentPage + 1)">Next →</button>
-      </div>
-    </div>
-  `;
-}
-
-function changeLeaderboardPage(targetPage) {
-  lbCurrentPage = targetPage;
-  renderLeaderboardPage();
-}
-
-/* ===================== EXTRA TOOLS & RECAP ===================== */
+/* ===================== TOOLS & RECAP ===================== */
 function changeFontSize(delta) {
   currentFontSize = Math.min(Math.max(currentFontSize + delta, 16), 28);
   document.getElementById('qText').style.fontSize = currentFontSize + 'px';
@@ -673,9 +553,7 @@ function updateBookmarkUI() {
   }
 }
 
-let activeRecapFilter = 'all';
 function switchRecapTab(filter, event) {
-  activeRecapFilter = filter;
   document.querySelectorAll('.recap-tab').forEach(t => t.classList.remove('active'));
   if (event) event.currentTarget.classList.add('active');
   renderRecapData(filter);
@@ -722,12 +600,7 @@ function restartQuiz() {
   initQuizEngine();
 }
 
-/* ===================== CUSTOM EXIT MODAL LOGIC ===================== */
 function exitQuiz() {
-  openExitModal();
-}
-
-function openExitModal() {
   document.getElementById('exitModal').classList.add('open');
 }
 
@@ -741,7 +614,6 @@ function confirmExit() {
   showView('view-landing');
 }
 
-/* ===================== INISIALISASI APLIKASI ===================== */
 document.addEventListener('DOMContentLoaded', () => {
   renderCatalog();
 });
