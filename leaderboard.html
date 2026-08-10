@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rekap Hasil Skor Peserta — Sinahub Edu</title>
+  <link rel="icon" type="image/png" href="icon.png">
+  
+  <!-- Font Google -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .subject-tab-container {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .subject-btn {
+      background: #fff;
+      border: 2px solid var(--rule);
+      color: var(--ink);
+      padding: 10px 22px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .subject-btn.active {
+      background: var(--ink);
+      color: #fff;
+      border-color: var(--ink);
+      box-shadow: 0 4px 12px rgba(44, 62, 80, 0.2);
+    }
+
+    .level-tab-container {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      background: #eef2f7;
+      padding: 8px;
+      border-radius: 999px;
+      max-width: fit-content;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .level-btn {
+      background: transparent;
+      border: none;
+      color: var(--ink-soft);
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .level-btn.active {
+      background: #fff;
+      color: var(--ink);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    /* Styling Search Bar */
+    .search-box-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+    .search-input {
+      width: 100%;
+      max-width: 450px;
+      padding: 12px 20px;
+      border-radius: 999px;
+      border: 2px solid var(--rule);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      background: #fff;
+    }
+    .search-input:focus {
+      border-color: var(--ink);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wrap" style="padding-top: 20px; padding-bottom: 40px;">
+    
+    <!-- HEADER NAVBAR -->
+    <header class="nav-inner" style="margin-bottom: 20px;">
+      <a href="index.html" class="brand-container" style="text-decoration: none; cursor: pointer;">
+        <img src="icon.png" alt="Logo Sinahub" class="brand-logo-img">
+        <div class="brand-text-wrap">
+          <div class="brand-title-row">
+            <span class="brand-title">Sinahub</span>
+            <span class="logo-tag">Edu</span>
+          </div>
+          <span class="brand-tagline">Belajar, Bertumbuh, Tanpa Batas</span>
+        </div>
+      </a>
+      <div class="nav-menu">
+        <a href="index.html" class="btn btn-ghost">← Beranda</a>
+      </div>
+    </header>
+
+    <!-- PAGE TITLE -->
+    <div style="text-align: center; margin-bottom: 24px;">
+      <h2 style="font-size: 28px; font-weight: 900; margin: 0 0 6px;">🏆 Papan Rekap Skor Peserta</h2>
+      <p style="color: var(--ink-soft); font-size: 15px; margin: 0;">Pantau nilai dan perkembangan belajar berdasarkan materi serta jenjang kelas</p>
+    </div>
+
+    <!-- SEARCH BAR -->
+    <div class="search-box-container">
+      <input type="text" id="searchInput" class="search-input" placeholder="🔍 Cari nama peserta atau kelas..." oninput="handleSearch()">
+    </div>
+
+    <!-- TAB 1: PILIH MATERI UTAMA -->
+    <div class="subject-tab-container" id="subjectTabs">
+      <button class="subject-btn active" onclick="switchSubject('all', event)">🌐 Semua Materi</button>
+      <button class="subject-btn" onclick="switchSubject('english', event)">💬 Bahasa Inggris</button>
+      <button class="subject-btn" onclick="switchSubject('literasi', event)">📖 Literasi</button>
+      <button class="subject-btn" onclick="switchSubject('mtk', event)">🧮 Matematika</button>
+    </div>
+
+    <!-- TAB 2: PILIH JENJANG / KELAS -->
+    <div class="level-tab-container" id="levelTabContainer">
+      <button class="level-btn active" onclick="switchLevel('all', event)">Semua Jenjang</button>
+      <button class="level-btn" onclick="switchLevel('SD', event)">SD (Kelas 1-6)</button>
+      <button class="level-btn" onclick="switchLevel('SMP', event)">SMP (Kelas 7-9)</button>
+      <button class="level-btn" onclick="switchLevel('SMA', event)">SMA (Kelas 10-12)</button>
+      <button class="level-btn" onclick="switchLevel('UMUM', event)">Umum / TOEFL</button>
+    </div>
+
+    <!-- KONTEN TABEL HASIL -->
+    <div id="leaderboardContent" style="background: #fff; border-radius: 20px; border: 2px solid var(--rule); padding: 20px; box-shadow: var(--shadow);">
+      <p style="text-align: center; color: var(--ink-soft); padding: 20px 0;">Memuat data hasil peserta...</p>
+    </div>
+
+  </div>
+
+  <!-- Library Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- Modul Supabase & Leaderboard -->
+  <script src="js/supabase-client.js"></script>
+  <script>
+    let lbCurrentPage = 1;
+    const lbPerPage = 10;
+    let lbAllDataCache = [];
+    
+    let activeSubject = 'all';
+    let activeLevel = 'all';
+    let searchQuery = '';
+
+    async function fetchLeaderboardData() {
+      const container = document.getElementById('leaderboardContent');
+      if (!container) return;
+      container.innerHTML = `<p style="text-align:center; color: var(--ink-soft); padding: 20px 0;">Memuat data hasil skor...</p>`;
+
+      try {
+        let query = supabaseClient.from('quiz_results').select('*').order('created_at', { ascending: false });
+        const { data, error } = await query;
+
+        if (error) {
+          container.innerHTML = `<p style="text-align:center; color: var(--red);">Gagal mengambil data dari server database.</p>`;
+          return;
+        }
+
+        if (!data || data.length === 0) {
+          container.innerHTML = `<p style="text-align:center; color: var(--ink-soft); padding: 30px 0;">Belum ada data peserta yang tersimpan.</p>`;
+          return;
+        }
+
+        // Simpan data mentah dari database ke cache utama
+        lbAllDataCache = data;
+        applyFiltersAndRender();
+
+      } catch (err) {
+        console.error(err);
+        container.innerHTML = `<p style="text-align:center; color: var(--red);">Terjadi kesalahan koneksi.</p>`;
+      }
+    }
+
+    function applyFiltersAndRender() {
+      const filteredData = lbAllDataCache.filter(item => {
+        const levelStr = (item.package_level || '').toUpperCase();
+        const titleStr = (item.package_title || '').toLowerCase();
+        const nameStr = (item.user_name || '').toLowerCase();
+        const classStr = (item.user_class || '').toLowerCase();
+
+        // 1. Filter Berdasarkan Search Query (Nama atau Kelas)
+        let matchSearch = true;
+        if (searchQuery.trim() !== '') {
+          const q = searchQuery.toLowerCase();
+          matchSearch = nameStr.includes(q) || classStr.includes(q);
+        }
+
+        // 2. Filter Berdasarkan Materi
+        let matchSubject = true;
+        if (activeSubject === 'english') {
+          matchSubject = levelStr.startsWith('SD13') || levelStr.startsWith('SD46') || levelStr.startsWith('SMP') || levelStr.startsWith('SMA') || levelStr.startsWith('TOEFL') || titleStr.includes('inggris') || titleStr.includes('vocab') || titleStr.includes('grammar') || titleStr.includes('tenses');
+        } else if (activeSubject === 'literasi') {
+          matchSubject = levelStr.startsWith('LIT') || titleStr.includes('literasi') || titleStr.includes('bacaan') || titleStr.includes('teks');
+        } else if (activeSubject === 'mtk') {
+          matchSubject = levelStr.startsWith('MTK') || titleStr.includes('matematika') || titleStr.includes('hitung') || titleStr.includes('aljabar') || titleStr.includes('angka');
+        }
+
+        // 3. Filter Berdasarkan Jenjang
+        let matchLevel = true;
+        if (activeLevel === 'SD') {
+          matchLevel = levelStr.includes('SD') || titleStr.includes('kelas 1') || titleStr.includes('kelas 2') || titleStr.includes('kelas 3') || titleStr.includes('kelas 4') || titleStr.includes('kelas 5') || titleStr.includes('kelas 6');
+        } else if (activeLevel === 'SMP') {
+          matchLevel = levelStr.includes('SMP') || titleStr.includes('kelas 7') || titleStr.includes('kelas 8') || titleStr.includes('kelas 9');
+        } else if (activeLevel === 'SMA') {
+          matchLevel = levelStr.includes('SMA') || titleStr.includes('kelas 10') || titleStr.includes('kelas 11') || titleStr.includes('kelas 12');
+        } else if (activeLevel === 'UMUM') {
+          matchLevel = levelStr.includes('UMUM') || levelStr.includes('TOEFL');
+        }
+
+        return matchSearch && matchSubject && matchLevel;
+      });
+
+      renderLeaderboardPage(filteredData);
+    }
+
+    function renderLeaderboardPage(dataToRender) {
+      const container = document.getElementById('leaderboardContent');
+      if (!container) return;
+
+      const totalData = dataToRender.length;
+      const totalPages = Math.ceil(totalData / lbPerPage) || 1;
+      if (lbCurrentPage > totalPages) lbCurrentPage = totalPages;
+      if (lbCurrentPage < 1) lbCurrentPage = 1;
+
+      const startIdx = (lbCurrentPage - 1) * lbPerPage;
+      const endIdx = startIdx + lbPerPage;
+      const paginatedData = dataToRender.slice(startIdx, endIdx);
+
+      if (totalData === 0) {
+        container.innerHTML = `<p style="text-align:center; color: var(--ink-soft); padding: 30px 0;">🔍 Tidak ditemukan hasil yang cocok dengan pencarian atau filter.</p>`;
+        return;
+      }
+
+      container.innerHTML = `
+        <div style="overflow-x: auto;">
+          <table style="width:100%; border-collapse:collapse; text-align:left; font-size:14px;">
+            <thead>
+              <tr style="border-bottom:2px solid var(--rule); color:var(--ink-soft);">
+                <th style="padding:12px;">Waktu</th>
+                <th style="padding:12px;">Nama Peserta</th>
+                <th style="padding:12px;">Kelas / Asal</th>
+                <th style="padding:12px;">Paket Soal</th>
+                <th style="padding:12px; text-align:center;">Mode</th>
+                <th style="padding:12px; text-align:center;">Skor</th>
+                <th style="padding:12px; text-align:center;">Nilai</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${paginatedData.map(item => {
+                const dateStr = new Date(item.created_at).toLocaleDateString('id-ID', {
+                  day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+                });
+
+                return `
+                  <tr style="border-bottom:1px solid var(--rule);">
+                    <td style="padding:14px 12px; font-size:12px; color:var(--ink-soft);">${dateStr}</td>
+                    <td style="padding:14px 12px; font-weight:800; color:var(--ink);">${item.user_name}</td>
+                    <td style="padding:14px 12px; font-weight:600;">${item.user_class}</td>
+                    <td style="padding:14px 12px; font-weight:700; color:var(--ink-soft);">${item.package_title || item.package_level}</td>
+                    <td style="padding:14px 12px; text-align:center; text-transform:capitalize; font-weight:700;">${item.quiz_mode}</td>
+                    <td style="padding:14px 12px; text-align:center; font-weight:800;">${item.score}/${item.total_questions}</td>
+                    <td style="padding:14px 12px; text-align:center; font-weight:900; color:${item.accuracy >= 70 ? 'var(--green)' : 'var(--red)'};">${item.accuracy}%</td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--rule); flex-wrap: wrap; gap: 8px;">
+          <span style="font-size: 13px; color: var(--ink-soft);">Menampilkan halaman <strong>${lbCurrentPage}</strong> dari <strong>${totalPages}</strong> (Total <strong>${totalData}</strong> data)</span>
+          <div style="display: flex; gap: 6px;">
+            <button class="btn btn-sm btn-ghost" ${lbCurrentPage === 1 ? 'disabled style="opacity:0.4; cursor:not-allowed;"' : ''} onclick="changePage(lbCurrentPage - 1)">← Prev</button>
+            <button class="btn btn-sm btn-ghost" ${lbCurrentPage === totalPages ? 'disabled style="opacity:0.4; cursor:not-allowed;"' : ''} onclick="changePage(lbCurrentPage + 1)">Next →</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function handleSearch() {
+      const input = document.getElementById('searchInput');
+      searchQuery = input.value;
+      lbCurrentPage = 1; // Reset ke halaman pertama saat mengetik
+      applyFiltersAndRender();
+    }
+
+    function switchSubject(subject, event) {
+      document.querySelectorAll('#subjectTabs .subject-btn').forEach(b => b.classList.remove('active'));
+      if (event) event.currentTarget.classList.add('active');
+      activeSubject = subject;
+      lbCurrentPage = 1;
+      applyFiltersAndRender();
+    }
+
+    function switchLevel(level, event) {
+      document.querySelectorAll('#levelTabContainer .level-btn').forEach(b => b.classList.remove('active'));
+      if (event) event.currentTarget.classList.add('active');
+      activeLevel = level;
+      lbCurrentPage = 1;
+      applyFiltersAndRender();
+    }
+
+    function changePage(targetPage) {
+      lbCurrentPage = targetPage;
+      applyFiltersAndRender();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchLeaderboardData();
+    });
+  </script>
+</body>
+</html>

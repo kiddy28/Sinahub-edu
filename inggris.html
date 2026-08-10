@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sinahub Edu — Media Pembelajaran JosJis</title>
+  <link rel="icon" type="image/png" href="icon.png">
+  
+  <!-- Font Google -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Canvas Confetti Library -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ===================== LANDING PAGE ===================== -->
+  <div id="view-landing" class="view active">
+    <div class="wrap">
+     <!-- NAVBAR DENGAN LOGO YANG BISA DIKLIK -->
+    <header class="nav-inner">
+      <a href="index.html" class="brand-container" style="text-decoration: none; cursor: pointer;">
+        <img src="icon.png" alt="Logo Sinahub" class="brand-logo-img">
+        <div class="brand-text-wrap">
+          <div class="brand-title-row">
+            <span class="brand-title">Sinahub</span>
+            <span class="logo-tag">Edu</span>
+          </div>
+          <span class="brand-tagline">Bahasa Inggris</span>
+        </div>
+      </a>
+
+      <div class="nav-menu">
+        <button class="btn btn-ghost" onclick="location.href='index.html'">← Beranda</button>
+      </div>
+    </header>
+
+      <section class="hero-section">
+        <div class="hero-content">
+          <span class="hero-badge">✨ Platform Belajar Bahasa Inggris paling Josjis</span>
+          <h1>Latihan Soal Lebih Seru & Paham Sampai ke Akar!</h1>
+          <p>Dirancang buat semua jenjang mulai SD, SMP, SMA, sampai Umum. Sinahu tata bahasa & kosakata jadi JosJis lewat latihan interaktif lengkap dengan audio pengucapan & gambar visual.</p>
+          
+          <div class="hero-stats">
+            <div class="stat-item">
+              <span class="stat-num">5+</span>
+              <span class="stat-lbl">Tingkat Sekolah & Umum</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-num">🔊 Audio</span>
+              <span class="stat-lbl">Pengucapan Native</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-num">100%</span>
+              <span class="stat-lbl">Pembahasan Rinci</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+  
+
+      <section class="catalog-section" id="catalog">
+        <h2 class="section-title">Pilih jENJANG Sinahu</h2>
+        <p class="section-sub">Sesuaikan dengan tingkatan kelas dan kebutuhan belajar</p>
+
+        <div class="filter-tabs">
+          <button class="tab-btn active" onclick="filterCatalog('all', event)">Semua Jenjang</button>
+          <button class="tab-btn" onclick="filterCatalog('SD13', event)">🟡 SD Kecil (Kelas 1-3)</button>
+          <button class="tab-btn" onclick="filterCatalog('SD46', event)">🟢 SD Besar (Kelas 4-6)</button>
+          <button class="tab-btn" onclick="filterCatalog('SMP', event)">🔵 SMP (Kelas 7-9)</button>
+          <button class="tab-btn" onclick="filterCatalog('SMA', event)">🟣 SMA (Kelas 10-12)</button>
+          <button class="tab-btn tab-btn-hardcore" onclick="filterCatalog('UMUM', event)">
+            <span class="fire-icon">🔥</span> 
+            <span class="glow-text">UMUM (Awas Kepala Berasap)</span> 
+            <span class="skull-badge">☠️ HARD</span>
+          </button>
+        </div>
+
+        <div class="catalog-grid" id="catalogGrid"></div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ===================== QUIZ ROOM ===================== -->
+  <div id="view-quiz" class="view">
+    <div class="quiz-top">
+      <div class="quiz-top-inner">
+        <button class="btn btn-ghost btn-sm" onclick="exitQuiz()">← Keluar</button>
+        
+        <button class="btn-palette-trigger" onclick="togglePaletteModal()">
+          <span>🔢 Soal <strong id="qProgress">1/5</strong></span>
+          <small>▼</small>
+        </button>
+
+        <!-- Timer / Mode Ujian Toggle -->
+        <div class="timer-box">
+          <span style="font-size:12px; font-weight:800; color:var(--ink-faint);">⏱️ Timer:</span>
+          <span class="timer-val" id="timerVal">00:00</span>
+          <div class="switch" id="timerSwitch" onclick="toggleTimer()"></div>
+        </div>
+
+        <div class="text-sizer">
+          <button class="text-btn" onclick="changeFontSize(-2)">A-</button>
+          <button class="text-btn" onclick="changeFontSize(2)">A+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="quiz-body">
+      <div class="question-card">
+        <div class="q-tools">
+          <span class="level-pill" id="qLevelTag">SD Class 1-3</span>
+          <button class="btn-bookmark" id="bookmarkBtn" onclick="toggleBookmark()">
+            🔖 <span>Tandai Soal</span>
+          </button>
+        </div>
+
+        <!-- Dukungan Gambar Visual pada Soal -->
+        <div class="q-image-container" id="qImageWrap" style="display:none;">
+          <img id="qImage" src="" alt="Gambar Soal" class="q-image">
+        </div>
+
+        <!-- Teks Soal + Audio Speaker -->
+        <div class="q-text-wrap">
+          <p class="resizable-text" id="qText">Loading question...</p>
+          <button class="btn-audio" onclick="speakQuestionText()" title="Dengarkan pengucapan">🔊</button>
+        </div>
+
+        <button class="btn-hint" onclick="toggleHint()">💡 Butuh Petunjuk/Hint?</button>
+        <div class="hint-box" id="hintBox"></div>
+
+        <div class="options" id="optionsWrap"></div>
+
+        <div class="pembahasan" id="pembahasanWrap">
+          <hr class="divider">
+          <h4 class="pembahasan-title">📘 Pembahasan Detail:</h4>
+          <div id="pembahasanList"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sticky-nav">
+      <div class="sticky-nav-inner">
+        <button class="btn btn-ghost" id="prevBtn" onclick="prevQuestion()">← Prev</button>
+        <button class="btn btn-check" id="checkBtn" onclick="checkAnswer()">Periksa Jawaban</button>
+        <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Pilih Nomor Soal -->
+  <div class="modal-overlay" id="paletteModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Daftar Nomor Soal</h3>
+        <button class="close-modal" onclick="togglePaletteModal()">✕</button>
+      </div>
+      <div class="palette-legend">
+        <span><i class="dot active"></i> Sedang Dibuka</span>
+        <span><i class="dot selected"></i> Dipilih</span>
+        <span><i class="dot checked"></i> Diperiksa</span>
+      </div>
+      <div class="palette-grid" id="paletteGrid"></div>
+    </div>
+  </div>
+
+  <!-- ===================== RESULT PAGE ===================== -->
+  <div id="view-result" class="view">
+    <div class="wrap">
+      <div class="score-card">
+        <h2>Hasil Sinahumu</h2>
+        <div class="score-circle" id="scoreAccuracy">100%</div>
+        <p id="scoreStats" class="score-subtext"></p>
+        
+        <div class="result-btn-group">
+          <button class="btn btn-primary" onclick="restartQuiz()">Ulangi Kuis</button>
+          <button class="btn btn-outline-red" onclick="toggleRecap()">Review Pembahasan</button>
+          <button class="btn btn-ghost" onclick="showView('view-landing')">Pilih Paket Lain</button>
+        </div>
+      </div>
+
+      <!-- Filter Panel Rekap (Semua vs Ditandai/Bookmarked) -->
+      <div class="recap-box" id="recapBox">
+        <div class="recap-tabs">
+          <button class="recap-tab active" onclick="switchRecapTab('all', event)">Semua Soal</button>
+          <button class="recap-tab" onclick="switchRecapTab('bookmarked', event)">🔖 Soal Ditandai</button>
+        </div>
+        <div id="recapContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Exit Confirmation Modal -->
+  <div class="modal-overlay" id="exitModal">
+    <div class="modal-content modal-confirm">
+      <div class="confirm-icon">⚠️</div>
+      <h3>Yakin Ingin Keluar?</h3>
+      <p>Progres kuis yang sedang kamu kerjakan akan hilang dan tidak tersimpan.</p>
+      <div class="confirm-actions">
+        <button class="btn btn-ghost" onclick="closeExitModal()">Lanjutkan Gasskeun</button>
+        <button class="btn btn-red" onclick="confirmExit()">Ya, Byee</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== MODAL REGISTRASI ===================== -->
+  <div id="regModal" class="modal-overlay">
+    <div class="modal-box">
+      <h2 style="margin-top:0;">Isi Identitas dulu biar Josjis</h2>
+      <p id="regPkgTitle" style="color:var(--ink-soft); font-size:14px; margin-bottom:16px;"></p>
+      
+      <form onsubmit="submitRegistration(event)">
+        <!-- Input Nama -->
+        <div style="margin-bottom: 12px; text-align: left;">
+          <label style="font-weight: bold; font-size: 13.5px; display: block; margin-bottom: 4px;">Nama Lengkap</label>
+          <input type="text" id="regName" placeholder="Masukkan nama kamu..." required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
+        </div>
+
+        <!-- Input Kelas (Teks / Angka) -->
+        <div style="margin-bottom: 16px; text-align: left;">
+          <label style="font-weight: bold; font-size: 13.5px; display: block; margin-bottom: 4px;">Kelas / Pekerjaan</label>
+          <input type="text" id="regClass" placeholder="Contoh: 2 SD / 8 SMP / 11 SMA / Umum" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
+        </div>
+
+        <!-- Pilihan Mode -->
+        <div style="margin-bottom: 20px; text-align: left;">
+          <label style="font-weight: bold; font-size: 13.5px; display: block; margin-bottom: 8px;">Pilih Mode Sinahu</label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <label class="mode-card">
+              <input type="radio" name="quizMode" value="belajar" checked>
+              <div style="font-size:13.5px; font-weight:bold;">📖 Mode Belajar</div>
+              <div style="font-size:12px; color:#666;">10 Soal • Tanpa Timer</div>
+            </label>
+            <label class="mode-card">
+              <input type="radio" name="quizMode" value="tes">
+              <div style="font-size:13.5px; font-weight:bold;">⏱️ Mode Tes</div>
+              <div style="font-size:12px; color:#666;">20 Soal • Timer 15 Mins</div>
+            </label>
+          </div>
+        </div>
+
+    
+        
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="btn" onclick="closeRegModal()" style="background:#eee; color:#333;">Skip</button>
+          <button type="submit" class="btn btn-primary" style="flex:1;">GASSKEUNN!! 🚀</button>
+        </div>
+      </form>
+    </div>
+  </div>
+   
+  <!-- Modal Konfirmasi / Peringatan Selesai Kuis -->
+<div class="modal-overlay" id="finishModal">
+  <div class="modal-content modal-confirm">
+    <div class="confirm-icon" id="finishModalIcon">🏁</div>
+    <h3 id="finishModalTitle">Yakin Selesai?</h3>
+    <p id="finishMsg">Pastikan semua soal sudah terisi dengan benar sebelum mengumpulkan jawaban.</p>
+    <div class="confirm-actions" id="finishModalActions">
+      <button class="btn btn-ghost" onclick="closeFinishModal()" id="finishModalBtnLeft">Cek Lagi</button>
+      <button class="btn btn-primary" onclick="proceedFinish()" id="finishModalBtnRight">Kumpulkan</button>
+    </div>
+  </div>
+</div>
+
+  <!-- Modal Peringatan Cooldown / Spam -->
+<div class="modal-overlay" id="cooldownModal">
+  <div class="modal-content modal-confirm">
+    <div class="confirm-icon">⏳</div>
+    <h3>Harap Sabar Ya!</h3>
+    <p id="cooldownMsg">Kamu harus menunggu beberapa menit lagi sebelum bisa memulai kuis kembali untuk mencegah spam.</p>
+    <div class="confirm-actions">
+      <button class="btn btn-primary" onclick="closeCooldownModal()" style="width:100%;">Mengerti, Siap!</button>
+    </div>
+  </div>
+</div>
+
+  <!-- Library Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- File JavaScript Aplikasi Kamu -->
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paket Matematika & Numerasi — Sinahub Edu</title>
+  <link rel="icon" type="image/png" href="icon.png">
+  
+  <!-- Font Google -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Canvas Confetti Library -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .sub-filter-container {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    .sub-tab-btn {
+      background: #fff;
+      border: 2px solid var(--rule);
+      color: var(--ink-soft);
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .sub-tab-btn.active {
+      background: var(--ink);
+      color: #fff;
+      border-color: var(--ink);
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===================== LANDING / KATALOG PAGE ===================== -->
+  <div id="view-landing" class="view active">
+    <div class="wrap">
+      <!-- NAVBAR -->
+      <header class="nav-inner">
+        <a href="index.html" class="brand-container" style="text-decoration: none; cursor: pointer;">
+          <img src="icon.png" alt="Logo" class="brand-logo-img">
+          <div class="brand-text-wrap">
+            <div class="brand-title-row">
+              <span class="brand-title">Sinahub</span>
+              <span class="logo-tag">Edu</span>
+            </div>
+            <span class="brand-tagline">Matematika & Numerasi</span>
+          </div>
+        </a>
+        <div class="nav-menu">
+          <button class="btn btn-ghost" onclick="location.href='index.html'">← Beranda</button>
+        </div>
+      </header>
+
+      <!-- HERO SECTION -->
+      <section class="hero-section" style="padding: 32px 24px; margin-bottom: 24px;">
+        <div class="hero-content">
+          <span class="hero-badge" style="background: #FDF6F0; color: #D35400;">🧮 Asah Logika & Hitung Cepat</span>
+          <h1 style="font-size: 32px; margin: 12px 0 8px;">Taklukkan Angka, Pahami Konsepnya!</h1>
+          <p style="font-size: 15px; margin-bottom: 0;">Pilih jenjang dan kelas spesifikmu di bawah ini untuk mulai berlatih dengan pembahasan logika yang mendalam.</p>
+        </div>
+      </section>
+
+      <!-- KATALOG MATEMATIKA -->
+      <section class="catalog-section" style="margin-top: 10px;">
+        <h2 class="section-title" style="font-size: 24px;">Pilih Jenjang & Kelas</h2>
+        <p class="section-sub">Materi disusun secara terstruktur dari Kelas 1 SD hingga Kelas 12 SMA</p>
+
+        <!-- Filter Utama Jenjang -->
+        <div class="filter-tabs" id="jenjangTabs" style="margin-bottom: 16px;">
+          <button class="tab-btn active" onclick="selectJenjang('all', event)">Semua Jenjang</button>
+          <button class="tab-btn" onclick="selectJenjang('SD', event)">🟡 SD (Kelas 1 - 6)</button>
+          <button class="tab-btn" onclick="selectJenjang('SMP', event)">🔵 SMP (Kelas 7 - 9)</button>
+          <button class="tab-btn" onclick="selectJenjang('SMA', event)">🟣 SMA (Kelas 10 - 12)</button>
+        </div>
+
+        <!-- Sub-Filter Kelas -->
+        <div id="subFilterContainer"></div>
+
+        <div class="catalog-grid" id="catalogGrid"></div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ===================== QUIZ ROOM ===================== -->
+  <div id="view-quiz" class="view">
+    <div class="quiz-top">
+      <div class="quiz-top-inner">
+        <button class="btn btn-ghost btn-sm" onclick="exitQuiz()">← Keluar</button>
+        
+        <button class="btn-palette-trigger" onclick="togglePaletteModal()">
+          <span>🔢 Soal <strong id="qProgress">1/5</strong></span>
+          <small>▼</small>
+        </button>
+
+        <div class="timer-box">
+          <span style="font-size:12px; font-weight:800; color:var(--ink-faint);">⏱️ Timer:</span>
+          <span class="timer-val" id="timerVal">00:00</span>
+          <div class="switch" id="timerSwitch" onclick="toggleTimer()"></div>
+        </div>
+
+        <div class="text-sizer">
+          <button class="text-btn" onclick="changeFontSize(-2)">A-</button>
+          <button class="text-btn" onclick="changeFontSize(2)">A+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="quiz-body">
+      <div class="question-card">
+        <div class="q-tools">
+          <span class="level-pill" id="qLevelTag">Matematika Level</span>
+          <button class="btn-bookmark" id="bookmarkBtn" onclick="toggleBookmark()">
+            🔖 <span>Tandai Soal</span>
+          </button>
+        </div>
+
+        <div class="q-image-container" id="qImageWrap" style="display:none;">
+          <img id="qImage" src="" alt="Gambar Soal" class="q-image">
+        </div>
+
+        <div class="q-text-wrap">
+          <p class="resizable-text" id="qText">Memuat soal...</p>
+        </div>
+
+        <button class="btn-hint" onclick="toggleHint()">💡 Butuh Petunjuk/Hint?</button>
+        <div class="hint-box" id="hintBox"></div>
+
+        <div class="options" id="optionsWrap"></div>
+
+        <div class="pembahasan" id="pembahasanWrap">
+          <hr class="divider">
+          <h4 class="pembahasan-title">📘 Pembahasan Detail:</h4>
+          <div id="pembahasanList"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sticky-nav">
+      <div class="sticky-nav-inner">
+        <button class="btn btn-ghost" id="prevBtn" onclick="prevQuestion()">← Prev</button>
+        <button class="btn btn-check" id="checkBtn" onclick="checkAnswer()">Periksa Jawaban</button>
+        <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Pilih Nomor Soal -->
+  <div class="modal-overlay" id="paletteModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Daftar Nomor Soal</h3>
+        <button class="close-modal" onclick="togglePaletteModal()">✕</button>
+      </div>
+      <div class="palette-legend">
+        <span><i class="dot active"></i> Sedang Dibuka</span>
+        <span><i class="dot selected"></i> Dipilih</span>
+        <span><i class="dot checked"></i> Diperiksa</span>
+      </div>
+      <div class="palette-grid" id="paletteGrid"></div>
+    </div>
+  </div>
+
+  <!-- ===================== RESULT PAGE ===================== -->
+  <div id="view-result" class="view">
+    <div class="wrap">
+      <div class="score-card">
+        <h2>Hasil Latihan Matematika</h2>
+        <div class="score-circle" id="scoreAccuracy">100%</div>
+        <p id="scoreStats" class="score-subtext"></p>
+        
+        <div class="result-btn-group">
+          <button class="btn btn-primary" onclick="restartQuiz()">Ulangi Kuis</button>
+          <button class="btn btn-outline-red" onclick="toggleRecap()">Review Pembahasan</button>
+          <button class="btn btn-ghost" onclick="showView('view-landing')">Pilih Paket Lain</button>
+        </div>
+      </div>
+
+      <div class="recap-box" id="recapBox">
+        <div class="recap-tabs">
+          <button class="recap-tab active" onclick="switchRecapTab('all', event)">Semua Soal</button>
+          <button class="recap-tab" onclick="switchRecapTab('bookmarked', event)">🔖 Soal Ditandai</button>
+        </div>
+        <div id="recapContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Exit Confirmation Modal -->
+  <div class="modal-overlay" id="exitModal">
+    <div class="modal-content modal-confirm">
+      <div class="confirm-icon">⚠️</div>
+      <h3>Yakin Ingin Keluar?</h3>
+      <p>Progres kuis yang sedang kamu kerjakan akan hilang dan tidak tersimpan.</p>
+      <div class="confirm-actions">
+        <button class="btn btn-ghost" onclick="closeExitModal()">Lanjutkan</button>
+        <button class="btn btn-red" onclick="confirmExit()">Ya, Keluar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== MODAL REGISTRASI ===================== -->
+  <div id="regModal" class="modal-overlay">
+    <div class="modal-box">
+      <h2 style="margin-top:0;">Isi Identitas dulu biar Josjis</h2>
+      <p id="regPkgTitle" style="color:var(--ink-soft); font-size:14px; margin-bottom:16px;"></p>
+      
+      <form onsubmit="submitRegistration(event)">
+        <div style="margin-bottom: 12px; text-align: left;">
+          <label style="font-weight: bold; font-size: 13.5px; display: block; margin-bottom: 4px;">Nama Lengkap</label>
+          <input type="text" id="regName" placeholder="Masukkan nama kamu..." required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
+        </div>
+
+        <div style="margin-bottom: 16px; text-align: left;">
+          <label style="font-weight: bold; font-size: 13.5px; display: block; margin-bottom: 4px;">Kelas / Pekerjaan</label>
+          <input type="text" id="regClass" placeholder="Contoh: Kelas 5 SD / 8 SMP / 11 SMA" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
+        </div>
+
+        <div style="margin-bottom: 20px; text-align: left;">
+          <label style="font-weight: bold; font-size: 13.5px; display: block; margin-bottom: 8px;">Pilih Mode Sinahu</label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <label class="mode-card">
+              <input type="radio" name="quizMode" value="belajar" checked>
+              <div style="font-size:13.5px; font-weight:bold;">📖 Mode Belajar</div>
+              <div style="font-size:12px; color:#666;">10 Soal • Tanpa Timer</div>
+            </label>
+            <label class="mode-card">
+              <input type="radio" name="quizMode" value="tes">
+              <div style="font-size:13.5px; font-weight:bold;">⏱️ Mode Tes</div>
+              <div style="font-size:12px; color:#666;">20 Soal • Timer 15 Mins</div>
+            </label>
+          </div>
+        </div>
+        
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="btn" onclick="closeRegModal()" style="background:#eee; color:#333;">Skip</button>
+          <button type="submit" class="btn btn-primary" style="flex:1;">GASSKEUNN!! 🚀</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Konfirmasi Selesai Kuis -->
+  <div class="modal-overlay" id="finishModal">
+    <div class="modal-content modal-confirm">
+      <div class="confirm-icon" id="finishModalIcon">🏁</div>
+      <h3 id="finishModalTitle">Yakin Selesai?</h3>
+      <p id="finishMsg">Pastikan semua soal sudah terisi dengan benar sebelum mengumpulkan jawaban.</p>
+      <div class="confirm-actions" id="finishModalActions">
+        <button class="btn btn-ghost" onclick="closeFinishModal()" id="finishModalBtnLeft">Cek Lagi</button>
+        <button class="btn btn-primary" onclick="proceedFinish()" id="finishModalBtnRight">Kumpulkan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Cooldown / Anti-Spam -->
+  <div class="modal-overlay" id="cooldownModal">
+    <div class="modal-content modal-confirm">
+      <div class="confirm-icon">⏳</div>
+      <h3>Harap Sabar Ya!</h3>
+      <p id="cooldownMsg">Kamu harus menunggu beberapa menit lagi sebelum bisa memulai kuis kembali untuk mencegah spam.</p>
+      <div class="confirm-actions">
+        <button class="btn btn-primary" onclick="closeCooldownModal()" style="width:100%;">Mengerti, Siap!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Library Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Script Logika Matematika & Engine Kuis -->
+  <script>
+    const SUPABASE_URL = 'https://kcskkvvvppccjowroopx.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtjc2trdnZ2cHBjY2pvd3Jvb3B4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYwNjA5NjYsImV4cCI6MjEwMTYzNjk2Nn0.vX6zrEXc6uirLCYlGc8BqTBypDUzpjGyanQSADwhzPs';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const mathPackages = [
+      { id: 'mtk-k1', title: 'Matematika Kelas 1 SD', jenjang: 'SD', classNum: '1', level: 'MTK_K1', count: 20, desc: 'Pengenalan bilangan 1-100, penjumlahan & pengurangan dasar.' },
+      { id: 'mtk-k2', title: 'Matematika Kelas 2 SD', jenjang: 'SD', classNum: '2', level: 'MTK_K2', count: 20, desc: 'Hitung bersusun, satuan panjang & waktu, serta perkalian dasar.' },
+      { id: 'mtk-k3', title: 'Matematika Kelas 3 SD', jenjang: 'SD', classNum: '3', level: 'MTK_K3', count: 20, desc: 'Operasi hitung campuran, pecahan sederhana, & keliling bangun datar.' },
+      { id: 'mtk-k4', title: 'Matematika Kelas 4 SD', jenjang: 'SD', classNum: '4', level: 'MTK_K4', count: 20, desc: 'KPK & FPB, pembagian bersusun, serta luas daerah bangun datar.' },
+      { id: 'mtk-k5', title: 'Matematika Kelas 5 SD', jenjang: 'SD', classNum: '5', level: 'MTK_K5', count: 20, desc: 'Operasi hitung pecahan kompleks, volume kubus & balok.' },
+      { id: 'mtk-k6', title: 'Matematika Kelas 6 SD', jenjang: 'SD', classNum: '6', level: 'MTK_K6', count: 20, desc: 'Perbandingan, skala, koordinat Cartesius, & pengolahan data.' },
+      
+      { id: 'mtk-k7', title: 'Matematika Kelas 7 SMP', jenjang: 'SMP', classNum: '7', level: 'MTK_K7', count: 20, desc: 'Bilangan bulat & pecahan, aljabar, serta persamaan linear satu variabel.' },
+      { id: 'mtk-k8', title: 'Matematika Kelas 8 SMP', jenjang: 'SMP', classNum: '8', level: 'MTK_K8', count: 20, desc: 'Relasi & fungsi, persamaan garis lurus, teorema Pythagoras.' },
+      { id: 'mtk-k9', title: 'Matematika Kelas 9 SMP', jenjang: 'SMP', classNum: '9', level: 'MTK_K9', count: 20, desc: 'Bilangan berpangkat, bentuk akar, persamaan kuadrat, & bangun ruang.' },
+      
+      { id: 'mtk-k10', title: 'Matematika Kelas 10 SMA', jenjang: 'SMA', classNum: '10', level: 'MTK_K10', count: 20, desc: 'Eksponen, logaritma, barisan & deret, trigonometri dasar.' },
+      { id: 'mtk-k11', title: 'Matematika Kelas 11 SMA', jenjang: 'SMA', classNum: '11', level: 'MTK_K11', count: 20, desc: 'Matriks, transformasi geometri, limit fungsi aljabar, & turunan.' },
+      { id: 'mtk-k12', title: 'Matematika Kelas 12 SMA', jenjang: 'SMA', classNum: '12', level: 'MTK_K12', count: 20, desc: 'Integral tentu & tak tentu, statistika inferensial, serta peluang.' }
+    ];
+
+    let pendingPkgId = null;
+    let currentPkg = null;
+    let currentQuestions = [];
+    let qIndex = 0;
+    let userAnswers = {}; 
+    let eliminatedOptions = {}; 
+    let currentFontSize = 20;
+    let bookmarkedQuestions = new Set();
+
+    let userName = '';
+    let userClass = '';
+    let quizMode = 'belajar'; 
+
+    let timerSeconds = 900; 
+    let timerInterval = null;
+    let unansListGlobal = [];
+
+    let currentJenjang = 'all';
+    let currentClass = 'all';
+
+    function selectJenjang(jenjang, event) {
+      document.querySelectorAll('#jenjangTabs .tab-btn').forEach(b => b.classList.remove('active'));
+      if (event) event.currentTarget.classList.add('active');
+      currentJenjang = jenjang;
+      currentClass = 'all';
+      renderSubFilter(jenjang);
+      renderCatalog();
+    }
+
+    function renderSubFilter(jenjang) {
+      const container = document.getElementById('subFilterContainer');
+      if (jenjang === 'all') {
+        container.innerHTML = '';
+        return;
+      }
+      let classes = [];
+      if (jenjang === 'SD') classes = [1, 2, 3, 4, 5, 6];
+      if (jenjang === 'SMP') classes = [7, 8, 9];
+      if (jenjang === 'SMA') classes = [10, 11, 12];
+
+      container.innerHTML = `
+        <div class="sub-filter-container">
+          <button class="sub-tab-btn active" onclick="selectClass('all', event)">Semua Kelas ${jenjang}</button>
+          ${classes.map(c => `<button class="sub-tab-btn" onclick="selectClass('${c}', event)">Kelas ${c}</button>`).join('')}
+        </div>
+      `;
+    }
+
+    function selectClass(classNum, event) {
+      document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
+      if (event) event.currentTarget.classList.add('active');
+      currentClass = classNum;
+      renderCatalog();
+    }
+
+    function renderCatalog() {
+      const grid = document.getElementById('catalogGrid');
+      let filtered = mathPackages;
+      if (currentJenjang !== 'all') filtered = filtered.filter(p => p.jenjang === currentJenjang);
+      if (currentClass !== 'all') filtered = filtered.filter(p => p.classNum === currentClass);
+
+      grid.innerHTML = filtered.map(p => `
+        <div class="pkg-card">
+          <span class="badge-level" style="background: #FDF2E9; color: #D35400;">Kelas ${p.classNum} ${p.jenjang}</span>
+          <h3 style="margin:10px 0 6px; font-size:18px;">${p.title}</h3>
+          <p style="margin:0 0 16px; font-size:13.5px; color:var(--ink-soft);">${p.desc}</p>
+          <button class="btn btn-primary" style="width:100%;" onclick="startQuiz('${p.id}')">Mulai Latihan</button>
+        </div>
+      `).join('');
+    }
+
+    function startQuiz(pkgId) {
+      const lastSubmitTime = localStorage.getItem('sinahub_last_submit');
+      if (lastSubmitTime) {
+        const elapsedMinutes = (Date.now() - parseInt(lastSubmitTime)) / (1000 * 60);
+        if (elapsedMinutes < 10) {
+          const remainingMinutes = Math.ceil(10 - elapsedMinutes);
+          document.getElementById('cooldownMsg').innerHTML = `⚠️ Harap tunggu sekitar <strong>${remainingMinutes} menit lagi</strong> sebelum mulai kuis kembali (Pencegahan Spam).`;
+          document.getElementById('cooldownModal').classList.add('open');
+          return;
+        }
+      }
+
+      pendingPkgId = pkgId;
+      const pkg = mathPackages.find(p => p.id === pkgId);
+      const titleEl = document.getElementById('regPkgTitle');
+      if (titleEl && pkg) titleEl.textContent = `Paket: ${pkg.title}`;
+      
+      document.getElementById('regModal').classList.add('open');
+    }
+
+    function closeCooldownModal() { document.getElementById('cooldownModal').classList.remove('open'); }
+    function closeRegModal() { document.getElementById('regModal').classList.remove('open'); }
+
+    function submitRegistration(event) {
+      event.preventDefault();
+      localStorage.setItem('sinahub_last_submit', Date.now().toString());
+
+      userName = document.getElementById('regName').value;
+      userClass = document.getElementById('regClass').value;
+      quizMode = document.querySelector('input[name="quizMode"]:checked').value;
+
+      closeRegModal();
+      initQuizEngine();
+    }
+
+    async function initQuizEngine() {
+      currentPkg = mathPackages.find(p => p.id === pendingPkgId);
+      if (!currentPkg) return;
+      
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById('view-quiz').classList.add('active');
+      window.scrollTo(0, 0);
+
+      try {
+        const { data: allQuestions, error } = await supabaseClient
+          .from('questions')
+          .select('*')
+          .eq('level', currentPkg.level);
+
+        if (error || !allQuestions || allQuestions.length === 0) {
+          alert('Gagal memuat soal dari database atau soal untuk kelas ini belum tersedia!');
+          showView('view-landing');
+          return;
+        }
+
+        const questionLimit = quizMode === 'belajar' ? 10 : 20;
+        currentQuestions = getRandomN(allQuestions, questionLimit);
+
+        qIndex = 0;
+        userAnswers = {};
+        eliminatedOptions = {};
+        bookmarkedQuestions.clear();
+
+        const timerValEl = document.getElementById('timerVal');
+        if (quizMode === 'tes') {
+          timerSeconds = 900;
+          if (timerValEl) timerValEl.style.display = 'inline-block';
+          startTimerInterval();
+        } else {
+          stopTimerInterval();
+          if (timerValEl) timerValEl.style.display = 'none';
+        }
+
+        renderQuestion();
+      } catch (err) {
+        console.error('Error:', err);
+        alert('Terjadi kesalahan koneksi ke database.');
+        showView('view-landing');
+      }
+    }
+
+    function showView(id) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      window.scrollTo(0, 0);
+    }
+
+    function getRandomN(arraySoal, count) {
+      const shuffled = [...arraySoal];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled.slice(0, count);
+    }
+
+    function renderQuestion() {
+      const q = currentQuestions[qIndex];
+      if (!q) return;
+
+      document.getElementById('qProgress').textContent = `${qIndex + 1}/${currentQuestions.length}`;
+      document.getElementById('qLevelTag').textContent = `${currentPkg.title}`;
+
+      const imgWrap = document.getElementById('qImageWrap');
+      const imgEl = document.getElementById('qImage');
+      if (q.image) {
+        imgEl.src = q.image;
+        imgWrap.style.display = 'block';
+      } else {
+        imgWrap.style.display = 'none';
+      }
+
+      const qTextEl = document.getElementById('qText');
+      qTextEl.innerHTML = q.text ? q.text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') : '';
+      qTextEl.style.fontSize = currentFontSize + 'px';
+      qTextEl.style.whiteSpace = 'pre-line';
+
+      updateBookmarkUI();
+
+      document.getElementById('hintBox').style.display = 'none';
+      document.getElementById('hintBox').textContent = q.hint || 'Tidak ada petunjuk untuk soal ini.';
+
+      const state = userAnswers[qIndex] || { selected: null, checked: false };
+      const currentEliminated = eliminatedOptions[qIndex] || new Set();
+
+      let optionsArray = q.options;
+      if (typeof optionsArray === 'string') {
+        try { optionsArray = JSON.parse(optionsArray); } catch (e) { optionsArray = []; }
+      }
+
+      const optWrap = document.getElementById('optionsWrap');
+      optWrap.innerHTML = optionsArray.map((opt, i) => {
+        let classes = ['opt'];
+        if (state.checked) {
+          if (i === q.correct) classes.push('is-correct');
+          else if (i === state.selected) classes.push('is-wrong');
+          else classes.push('is-dim');
+        } else if (i === state.selected) {
+          classes.push('is-selected');
+        }
+        if (currentEliminated.has(i) && !state.checked) classes.push('is-eliminated');
+
+        return `
+          <div class="opt-row">
+            <button class="${classes.join(' ')}" ${state.checked ? 'disabled' : ''} onclick="selectOption(${i})">
+              <span>${String.fromCharCode(65 + i)}.</span>
+              <span>${opt}</span>
+            </button>
+            ${!state.checked ? `
+              <button class="btn-eliminate ${currentEliminated.has(i) ? 'active' : ''}" onclick="toggleEliminate(${i})">
+                ${currentEliminated.has(i) ? '↩' : '✕'}
+              </button>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+
+      const checkBtn = document.getElementById('checkBtn');
+      if (state.checked) {
+        checkBtn.disabled = true;
+        checkBtn.textContent = 'Sudah Diperiksa';
+        renderPembahasan();
+      } else {
+        checkBtn.disabled = state.selected === null;
+        checkBtn.textContent = 'Periksa Jawaban';
+        document.getElementById('pembahasanWrap').classList.remove('open');
+      }
+
+      document.getElementById('prevBtn').disabled = qIndex === 0;
+      document.getElementById('nextBtn').textContent = qIndex === currentQuestions.length - 1 ? 'Selesai →' : 'Next →';
+    }
+
+    function selectOption(idx) {
+      if (userAnswers[qIndex]?.checked) return;
+      userAnswers[qIndex] = { selected: idx, checked: false };
+      renderQuestion();
+    }
+
+    function toggleEliminate(optIdx) {
+      if (userAnswers[qIndex]?.checked) return;
+      if (!eliminatedOptions[qIndex]) eliminatedOptions[qIndex] = new Set();
+      if (eliminatedOptions[qIndex].has(optIdx)) eliminatedOptions[qIndex].delete(optIdx);
+      else {
+        eliminatedOptions[qIndex].add(optIdx);
+        if (userAnswers[qIndex]?.selected === optIdx) userAnswers[qIndex].selected = null;
+      }
+      renderQuestion();
+    }
+
+    function checkAnswer() {
+      const state = userAnswers[qIndex];
+      if (!state || state.selected === null) return;
+      state.checked = true;
+      renderQuestion();
+    }
+
+    function renderPembahasan() {
+      const q = currentQuestions[qIndex];
+      const list = document.getElementById('pembahasanList');
+      let optionsArray = typeof q.options === 'string' ? JSON.parse(q.options) : q.options;
+      let explainArray = typeof q.explain === 'string' ? JSON.parse(q.explain) : q.explain;
+
+      list.innerHTML = explainArray.map((item, i) => `
+        <div class="peh-card ${i === q.correct ? 'ok' : 'no'}">
+          <strong>(${String.fromCharCode(65 + i)}) ${optionsArray[i] || ''} ${i === q.correct ? '✅' : ''}</strong>
+          <p style="margin:6px 0; font-size:13.5px; color:var(--ink);">${item.text}</p>
+        </div>
+      `).join('');
+      document.getElementById('pembahasanWrap').classList.add('open');
+    }
+
+    function startTimerInterval() {
+      stopTimerInterval();
+      updateTimerDisplay();
+      timerInterval = setInterval(() => {
+        timerSeconds--;
+        updateTimerDisplay();
+        if (timerSeconds <= 0) {
+          stopTimerInterval();
+          alert('Waktu 15 menit telah habis!');
+          finishQuiz();
+        }
+      }, 1000);
+    }
+
+    function stopTimerInterval() { if (timerInterval) { clearInterval(timerInterval); timerInterval = null; } }
+    function updateTimerDisplay() {
+      const m = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
+      const s = String(timerSeconds % 60).padStart(2, '0');
+      const el = document.getElementById('timerVal');
+      if (el) el.textContent = `⏱️ ${m}:${s}`;
+    }
+
+    function prevQuestion() { if (qIndex > 0) { qIndex--; renderQuestion(); } }
+    function nextQuestion() {
+      if (qIndex < currentQuestions.length - 1) { qIndex++; renderQuestion(); }
+      else { checkAndFinishQuiz(); }
+    }
+
+    function togglePaletteModal() {
+      const modal = document.getElementById('paletteModal');
+      modal.classList.toggle('open');
+      if (modal.classList.contains('open')) renderPalette();
+    }
+
+    function renderPalette() {
+      const grid = document.getElementById('paletteGrid');
+      grid.innerHTML = currentQuestions.map((_, i) => {
+        const state = userAnswers[i];
+        let cls = 'p-num';
+        if (i === qIndex) cls += ' is-current';
+        else if (state?.checked) cls += ' is-checked';
+        else if (state?.selected !== null && state?.selected !== undefined) cls += ' is-selected';
+        return `<button class="${cls}" onclick="jumpToQuestion(${i})">${i + 1}</button>`;
+      }).join('');
+    }
+
+    function jumpToQuestion(i) { qIndex = i; togglePaletteModal(); renderQuestion(); }
+
+    function checkAndFinishQuiz() {
+      unansListGlobal = [];
+      currentQuestions.forEach((_, i) => {
+        if (!userAnswers[i] || userAnswers[i].selected === null || userAnswers[i].selected === undefined) unansListGlobal.push(i + 1);
+      });
+
+      const modal = document.getElementById('finishModal');
+      const iconEl = document.getElementById('finishModalIcon');
+      const titleEl = document.getElementById('finishModalTitle');
+      const msgEl = document.getElementById('finishMsg');
+      const btnRight = document.getElementById('finishModalBtnRight');
+
+      if (unansListGlobal.length > 0) {
+        iconEl.textContent = '⚠️';
+        titleEl.textContent = 'Belum Lengkap!';
+        msgEl.innerHTML = `Masih ada <strong>${unansListGlobal.length} soal</strong> belum terjawab!<br>Nomor: ${unansListGlobal.join(', ')}`;
+        btnRight.style.display = 'none';
+      } else {
+        iconEl.textContent = '🏁';
+        titleEl.textContent = 'Yakin Selesai?';
+        msgEl.textContent = 'Semua soal terjawab. Kumpulkan jawaban sekarang?';
+        btnRight.style.display = 'block';
+      }
+      modal.classList.add('open');
+    }
+
+    function closeFinishModal() {
+      document.getElementById('finishModal').classList.remove('open');
+      if (unansListGlobal.length > 0) { qIndex = unansListGlobal[0] - 1; renderQuestion(); }
+    }
+
+    async function finishQuiz() {
+      stopTimerInterval();
+      showView('view-result');
+      let correctCount = 0;
+      currentQuestions.forEach((q, i) => { if (userAnswers[i]?.selected === q.correct) correctCount++; });
+
+      const accuracy = Math.round((correctCount / currentQuestions.length) * 100);
+      document.getElementById('scoreAccuracy').textContent = accuracy + '%';
+      document.getElementById('scoreStats').innerHTML = `Kerja bagus, <strong>${userName}</strong> (${userClass})!<br>Benar <strong>${correctCount}</strong> dari <strong>${currentQuestions.length}</strong> soal.`;
+
+      try {
+        await supabaseClient.from('quiz_results').insert([{
+          user_name: userName || 'Tanpa Nama',
+          user_class: userClass || '-',
+          package_level: currentPkg.level,
+          package_title: currentPkg.title,
+          quiz_mode: quizMode,
+          score: correctCount,
+          total_questions: currentQuestions.length,
+          accuracy: accuracy
+        }]);
+      } catch (err) { console.error(err); }
+
+      if (accuracy >= 80 && typeof confetti === 'function') confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+      renderRecapData('all');
+    }
+
+    function changeFontSize(delta) {
+      currentFontSize = Math.min(Math.max(currentFontSize + delta, 16), 28);
+      document.getElementById('qText').style.fontSize = currentFontSize + 'px';
+    }
+
+    function toggleHint() {
+      const box = document.getElementById('hintBox');
+      box.style.display = box.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function toggleBookmark() {
+      if (bookmarkedQuestions.has(qIndex)) bookmarkedQuestions.delete(qIndex);
+      else bookmarkedQuestions.add(qIndex);
+      updateBookmarkUI();
+    }
+
+    function updateBookmarkUI() {
+      const btn = document.getElementById('bookmarkBtn');
+      if (!btn) return;
+      if (bookmarkedQuestions.has(qIndex)) {
+        btn.classList.add('active');
+        btn.innerHTML = '🔖 <span>Tersimpan</span>';
+      } else {
+        btn.classList.remove('active');
+        btn.innerHTML = '🔖 <span>Tandai Soal</span>';
+      }
+    }
+
+    function switchRecapTab(filter, event) {
+      document.querySelectorAll('.recap-tab').forEach(t => t.classList.remove('active'));
+      if (event) event.currentTarget.classList.add('active');
+      renderRecapData(filter);
+    }
+
+    function renderRecapData(filter = 'all') {
+      const content = document.getElementById('recapContent');
+      content.innerHTML = currentQuestions.map((q, i) => {
+        const isBookmarked = bookmarkedQuestions.has(i);
+        if (filter === 'bookmarked' && !isBookmarked) return '';
+        const ans = userAnswers[i];
+        const isCorrect = ans && ans.selected === q.correct;
+        let optionsArray = typeof q.options === 'string' ? JSON.parse(q.options) : q.options;
+        const ansText = ans && ans.selected !== null ? `(${String.fromCharCode(65 + ans.selected)}) ${optionsArray[ans.selected] || ''}` : 'Belum dijawab';
+        return `
+          <div style="background:#fff; border-radius:12px; padding:16px; margin-bottom:12px; border:1px solid var(--rule);">
+            <p style="font-weight:800; margin:0 0 8px;">${i + 1}. ${q.text} ${isBookmarked ? '🔖' : ''}</p>
+            <p style="margin:0; font-size:14px; color:${isCorrect ? 'var(--green)' : 'var(--red)'};">Jawabanmu: ${ansText}</p>
+          </div>
+        `;
+      }).join('') || '<p style="color:var(--ink-soft); text-align:center;">Tidak ada soal.</p>';
+    }
+
+    function toggleRecap() { document.getElementById('recapBox').style.display = document.getElementById('recapBox').style.display === 'block' ? 'none' : 'block'; }
+    function restartQuiz() { initQuizEngine(); }
+    function exitQuiz() { document.getElementById('exitModal').classList.add('open'); }
+    function closeExitModal() { document.getElementById('exitModal').classList.remove('open'); }
+    function confirmExit() { closeExitModal(); stopTimerInterval(); showView('view-landing'); }
+
+    document.addEventListener('DOMContentLoaded', () => { renderCatalog(); });
+  </script>
+</body>
+</html>
