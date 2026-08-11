@@ -24,6 +24,18 @@ function getRandomN(arraySoal, count) {
   return shuffled.slice(0, count);
 }
 
+// Fungsi helper pengacak opsi dipindah ke luar fungsi utama
+function shuffleOptions(options, correctIndex) {
+  const indexedOptions = options.map((opt, idx) => ({ opt, isCorrect: idx === correctIndex }));
+  for (let i = indexedOptions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indexedOptions[i], indexedOptions[j]] = [indexedOptions[j], indexedOptions[i]];
+  }
+  const shuffledOptions = indexedOptions.map(item => item.opt);
+  const newCorrectIndex = indexedOptions.findIndex(item => item.isCorrect);
+  return { shuffledOptions, newCorrectIndex };
+}
+
 function speakQuestionText() {
   const q = currentQuestions[qIndex];
   if (q && q.text && typeof speakText === 'function') {
@@ -54,22 +66,7 @@ async function initQuizEngine(packageData, pName, pClass, pMode) {
 
     const questionLimit = quizMode === 'belajar' ? 10 : 20;
     const rawSelectedQuestions = getRandomN(allQuestions, questionLimit);
-// Fungsi helper untuk mengacak array opsi beserta penyesuaian indeks jawaban benar
-function shuffleOptions(options, correctIndex) {
-  const indexedOptions = options.map((opt, idx) => ({ opt, isCorrect: idx === correctIndex }));
-  
-  // Algoritma Fisher-Yates untuk mengacak posisi
-  for (let i = indexedOptions.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [indexedOptions[i], indexedOptions[j]] = [indexedOptions[j], indexedOptions[i]];
-  }
 
-  const shuffledOptions = indexedOptions.map(item => item.opt);
-  const newCorrectIndex = indexedOptions.findIndex(item => item.isCorrect);
-
-  return { shuffledOptions, newCorrectIndex };
-}
-    // Format dan acak opsi jawaban untuk setiap soal
     currentQuestions = rawSelectedQuestions.map(q => {
       let optionsArray = q.options;
       if (typeof optionsArray === 'string') {
@@ -81,22 +78,13 @@ function shuffleOptions(options, correctIndex) {
         try { explainArray = JSON.parse(explainArray); } catch (e) { explainArray = []; }
       }
 
-      // Acak posisi opsi sekaligus sesuaikan indeks jawaban benar dan penjelasannya
       const { shuffledOptions, newCorrectIndex } = shuffleOptions(optionsArray, q.correct);
-      
-      // Jika array penjelasan (explain) juga ikut berbentuk array sesuai opsi, urutkan ulang juga
-      let shuffledExplain = explainArray;
-      if (explainArray && explainArray.length === optionsArray.length) {
-        const indexedExplain = explainArray.map((exp, idx) => ({ exp, isCorrect: idx === q.correct }));
-        // Gunakan urutan acak yang sama berdasarkan indeks lama ke baru
-        // (Atau biarkan jika penjelasan tidak terikat posisi indeks mutlak)
-      }
 
       return {
         ...q,
         options: shuffledOptions,
         correct: newCorrectIndex,
-        explain: explainArray // Penjelasan detail tetap mengikuti item data aslinya
+        explain: explainArray
       };
     });
 
@@ -405,8 +393,6 @@ function closeFinishModal() {
 async function finishQuiz() {
   stopTimerInterval();
   
-  // Sembunyikan bagian kuis, tampilkan hasil
-  const quizBody = document.getElementById('quizBodyContainer'); // atau view-result
   if (document.getElementById('view-quiz') && document.getElementById('view-result')) {
     document.getElementById('view-quiz').classList.remove('active');
     document.getElementById('view-result').classList.add('active');
