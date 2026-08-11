@@ -23,18 +23,15 @@ let eliminatedOptions = {};
 let currentFontSize = 20;
 let bookmarkedQuestions = new Set();
 
-// State Peserta & Mode
 let userName = '';
 let userClass = '';
 let quizMode = 'belajar'; 
 let activeLeaderboardFilter = 'all';
 
-// State Paginasi Leaderboard
 let lbCurrentPage = 1;
 const lbPerPage = 10;
 let lbAllDataCache = [];
 
-// Countdown Timer State
 let timerSeconds = 900; 
 let timerInterval = null;
 let unansListGlobal = [];
@@ -47,6 +44,18 @@ function getRandomN(arraySoal, count) {
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   return shuffled.slice(0, count);
+}
+
+// Fungsi helper pengacak opsi (diletakkan di luar fungsi utama)
+function shuffleOptions(options, correctIndex) {
+  const indexedOptions = options.map((opt, idx) => ({ opt, isCorrect: idx === correctIndex }));
+  for (let i = indexedOptions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indexedOptions[i], indexedOptions[j]] = [indexedOptions[j], indexedOptions[i]];
+  }
+  const shuffledOptions = indexedOptions.map(item => item.opt);
+  const newCorrectIndex = indexedOptions.findIndex(item => item.isCorrect);
+  return { shuffledOptions, newCorrectIndex };
 }
 
 /* ===================== TEXT TO SPEECH (AUDIO) ===================== */
@@ -112,15 +121,14 @@ function renderCatalog(filter = 'all') {
   }).join('');
 }
 
-/* ===================== MODAL REGISTRASI DENGAN COOLDOWN 10 MENIT ===================== */
+/* ===================== MODAL REGISTRASI ===================== */
 function startQuiz(pkgId) {
   const lastSubmitTime = localStorage.getItem('sinahub_last_submit');
   if (lastSubmitTime) {
     const elapsedMinutes = (Date.now() - parseInt(lastSubmitTime)) / (1000 * 60);
     if (elapsedMinutes < 10) {
       const remainingMinutes = Math.ceil(10 - elapsedMinutes);
-      
-      document.getElementById('cooldownMsg').innerHTML = `⚠️ Harap tunggu sekitar <strong>${remainingMinutes} menit lagi</strong> sebelum mulai kuis atau mengisi identitas kembali (Pencegahan Spam).`;
+      document.getElementById('cooldownMsg').innerHTML = `⚠️ Harap tunggu sekitar <strong>${remainingMinutes} menit lagi</strong> sebelum mulai kuis kembali.`;
       document.getElementById('cooldownModal').classList.add('open');
       return;
     }
@@ -157,7 +165,7 @@ function submitRegistration(event) {
   initQuizEngine();
 }
 
-/* ===================== QUIZ ENGINE (MENGGUNAKAN questions_inggris) ===================== */
+/* ===================== QUIZ ENGINE ===================== */
 async function initQuizEngine() {
   currentPkg = packages.find(p => p.id === pendingPkgId);
   if (!currentPkg) return;
@@ -168,7 +176,6 @@ async function initQuizEngine() {
   document.getElementById('optionsWrap').innerHTML = '';
 
   try {
-    // Diambil dari tabel terpisah: questions_inggris
     const { data: allQuestions, error } = await supabaseClient
       .from('questions_inggris')
       .select('*')
@@ -181,11 +188,8 @@ async function initQuizEngine() {
     }
 
     const questionLimit = quizMode === 'belajar' ? 10 : 20;
-    currentQuestions = getRandomN(allQuestions, questionLimit);
-const questionLimit = quizMode === 'belajar' ? 10 : 20;
     const rawSelectedQuestions = getRandomN(allQuestions, questionLimit);
 
-    // Format dan acak opsi jawaban untuk setiap soal
     currentQuestions = rawSelectedQuestions.map(q => {
       let optionsArray = q.options;
       if (typeof optionsArray === 'string') {
@@ -197,22 +201,13 @@ const questionLimit = quizMode === 'belajar' ? 10 : 20;
         try { explainArray = JSON.parse(explainArray); } catch (e) { explainArray = []; }
       }
 
-      // Acak posisi opsi sekaligus sesuaikan indeks jawaban benar dan penjelasannya
       const { shuffledOptions, newCorrectIndex } = shuffleOptions(optionsArray, q.correct);
-      
-      // Jika array penjelasan (explain) juga ikut berbentuk array sesuai opsi, urutkan ulang juga
-      let shuffledExplain = explainArray;
-      if (explainArray && explainArray.length === optionsArray.length) {
-        const indexedExplain = explainArray.map((exp, idx) => ({ exp, isCorrect: idx === q.correct }));
-        // Gunakan urutan acak yang sama berdasarkan indeks lama ke baru
-        // (Atau biarkan jika penjelasan tidak terikat posisi indeks mutlak)
-      }
 
       return {
         ...q,
         options: shuffledOptions,
         correct: newCorrectIndex,
-        explain: explainArray // Penjelasan detail tetap mengikuti item data aslinya
+        explain: explainArray
       };
     });
     
@@ -327,18 +322,12 @@ function renderQuestion() {
 
 function selectOption(idx) {
   if (userAnswers[qIndex]?.checked) return;
-
-  userAnswers[qIndex] = { 
-    selected: idx, 
-    checked: false 
-  };
-  
+  userAnswers[qIndex] = { selected: idx, checked: false };
   renderQuestion();
 }
 
 function toggleEliminate(optIdx) {
   if (userAnswers[qIndex]?.checked) return;
-
   if (!eliminatedOptions[qIndex]) eliminatedOptions[qIndex] = new Set();
   
   if (eliminatedOptions[qIndex].has(optIdx)) {
@@ -355,7 +344,6 @@ function toggleEliminate(optIdx) {
 function checkAnswer() {
   const state = userAnswers[qIndex];
   if (!state || state.selected === null) return;
-
   state.checked = true;
   renderQuestion();
 }
@@ -394,31 +382,14 @@ function renderPembahasan() {
 
   document.getElementById('pembahasanWrap').classList.add('open');
 }
-// Fungsi helper untuk mengacak array opsi beserta penyesuaian indeks jawaban benar
-function shuffleOptions(options, correctIndex) {
-  const indexedOptions = options.map((opt, idx) => ({ opt, isCorrect: idx === correctIndex }));
-  
-  // Algoritma Fisher-Yates untuk mengacak posisi
-  for (let i = indexedOptions.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [indexedOptions[i], indexedOptions[j]] = [indexedOptions[j], indexedOptions[i]];
-  }
 
-  const shuffledOptions = indexedOptions.map(item => item.opt);
-  const newCorrectIndex = indexedOptions.findIndex(item => item.isCorrect);
-
-  return { shuffledOptions, newCorrectIndex };
-}
-
-/* ===================== COUNTDOWN TIMER ===================== */
+/* ===================== COUNTDOWN TIMER & NAVIGASI ===================== */
 function startTimerInterval() {
   stopTimerInterval();
   updateTimerDisplay();
-
   timerInterval = setInterval(() => {
     timerSeconds--;
     updateTimerDisplay();
-
     if (timerSeconds <= 0) {
       stopTimerInterval();
       alert('Waktu 15 menit telah habis! Kuis akan otomatis dikumpulkan.');
@@ -438,12 +409,9 @@ function updateTimerDisplay() {
   const m = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
   const s = String(timerSeconds % 60).padStart(2, '0');
   const timerValEl = document.getElementById('timerVal');
-  if (timerValEl) {
-    timerValEl.textContent = `⏱️ ${m}:${s}`;
-  }
+  if (timerValEl) timerValEl.textContent = `⏱️ ${m}:${s}`;
 }
 
-/* ===================== NAVIGASI & PALETTE ===================== */
 function prevQuestion() {
   if (qIndex > 0) { qIndex--; renderQuestion(); }
 }
@@ -482,7 +450,6 @@ function jumpToQuestion(i) {
   renderQuestion();
 }
 
-/* ===================== VALIDASI & FINISH ===================== */
 function checkAndFinishQuiz() {
   unansListGlobal = [];
   currentQuestions.forEach((_, i) => {
@@ -572,7 +539,6 @@ async function finishQuiz() {
   renderRecapData('all');
 }
 
-/* ===================== TOOLS & RECAP ===================== */
 function changeFontSize(delta) {
   currentFontSize = Math.min(Math.max(currentFontSize + delta, 16), 28);
   document.getElementById('qText').style.fontSize = currentFontSize + 'px';
@@ -609,7 +575,6 @@ function switchRecapTab(filter, event) {
 
 function renderRecapData(filter = 'all') {
   const content = document.getElementById('recapContent');
-  
   const list = currentQuestions.map((q, i) => {
     const isBookmarked = bookmarkedQuestions.has(i);
     if (filter === 'bookmarked' && !isBookmarked) return '';
