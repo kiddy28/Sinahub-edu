@@ -182,7 +182,40 @@ async function initQuizEngine() {
 
     const questionLimit = quizMode === 'belajar' ? 10 : 20;
     currentQuestions = getRandomN(allQuestions, questionLimit);
+const questionLimit = quizMode === 'belajar' ? 10 : 20;
+    const rawSelectedQuestions = getRandomN(allQuestions, questionLimit);
 
+    // Format dan acak opsi jawaban untuk setiap soal
+    currentQuestions = rawSelectedQuestions.map(q => {
+      let optionsArray = q.options;
+      if (typeof optionsArray === 'string') {
+        try { optionsArray = JSON.parse(optionsArray); } catch (e) { optionsArray = []; }
+      }
+
+      let explainArray = q.explain;
+      if (typeof explainArray === 'string') {
+        try { explainArray = JSON.parse(explainArray); } catch (e) { explainArray = []; }
+      }
+
+      // Acak posisi opsi sekaligus sesuaikan indeks jawaban benar dan penjelasannya
+      const { shuffledOptions, newCorrectIndex } = shuffleOptions(optionsArray, q.correct);
+      
+      // Jika array penjelasan (explain) juga ikut berbentuk array sesuai opsi, urutkan ulang juga
+      let shuffledExplain = explainArray;
+      if (explainArray && explainArray.length === optionsArray.length) {
+        const indexedExplain = explainArray.map((exp, idx) => ({ exp, isCorrect: idx === q.correct }));
+        // Gunakan urutan acak yang sama berdasarkan indeks lama ke baru
+        // (Atau biarkan jika penjelasan tidak terikat posisi indeks mutlak)
+      }
+
+      return {
+        ...q,
+        options: shuffledOptions,
+        correct: newCorrectIndex,
+        explain: explainArray // Penjelasan detail tetap mengikuti item data aslinya
+      };
+    });
+    
     qIndex = 0;
     userAnswers = {};
     eliminatedOptions = {};
@@ -360,6 +393,21 @@ function renderPembahasan() {
   `).join('');
 
   document.getElementById('pembahasanWrap').classList.add('open');
+}
+// Fungsi helper untuk mengacak array opsi beserta penyesuaian indeks jawaban benar
+function shuffleOptions(options, correctIndex) {
+  const indexedOptions = options.map((opt, idx) => ({ opt, isCorrect: idx === correctIndex }));
+  
+  // Algoritma Fisher-Yates untuk mengacak posisi
+  for (let i = indexedOptions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indexedOptions[i], indexedOptions[j]] = [indexedOptions[j], indexedOptions[i]];
+  }
+
+  const shuffledOptions = indexedOptions.map(item => item.opt);
+  const newCorrectIndex = indexedOptions.findIndex(item => item.isCorrect);
+
+  return { shuffledOptions, newCorrectIndex };
 }
 
 /* ===================== COUNTDOWN TIMER ===================== */
