@@ -425,7 +425,7 @@
         const { data: allQuestions, error } = await supabaseClient
           .from('questions_literasi')
           .select('*')
-          .eq('level', currentPkg.level);
+          .ilike('level', `%${currentPkg.level}%`);
 
         if (error || !allQuestions || allQuestions.length === 0) {
           alert('Gagal memuat soal dari database atau soal untuk kelas ini belum tersedia!');
